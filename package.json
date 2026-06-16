@@ -1,0 +1,18 @@
+{
+  "name": "agy-dashboard",
+  "version": "1.0.0",
+  "description": "Visual dashboard and trace monitoring UI for agy (Antigravity) CLI",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx -y http-server -p 3000 -o"
+  },
+  "keywords": [
+    "antigravity",
+    "dashboard",
+    "cli",
+    "visualizer",
+    "agent"
+  ],
+  "author": "Antigravity Dev Team",
+  "license": "MIT"
+}

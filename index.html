@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>agy - Antigravity CLI Execution & Agent Trace Dashboard</title>
+  <meta name="description" content="A high-performance visual dashboard and monitoring UI for the agy (Antigravity) CLI tool, featuring real-time step visualization, collapsible thought processes, and file previews.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- App Main Layout Grid -->
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="logo-section">
+        <span class="logo-badge">agy</span>
+        <h1 id="dashboard-title" class="logo-text">Antigravity Dashboard</h1>
+      </div>
+      
+      <div class="header-status">
+        <span id="status-dot" class="status-dot"></span>
+        <span id="status-text" class="status-text-label">Session completed</span>
+      </div>
+
+      <div class="header-controls">
+        <div class="model-selector-wrapper">
+          <label for="model-select">Active Model:</label>
+          <select id="model-select" class="select-styled">
+            <option value="Gemini 3.5 Flash (Medium)">Gemini 3.5 Flash (Medium)</option>
+            <option value="Gemini 3.5 Flash (High)">Gemini 3.5 Flash (High)</option>
+            <option value="Gemini 3.5 Flash (Low)">Gemini 3.5 Flash (Low)</option>
+            <option value="Gemini 3.1 Pro (Low)">Gemini 3.1 Pro (Low)</option>
+            <option value="Gemini 3.1 Pro (High)">Gemini 3.1 Pro (High)</option>
+            <option value="Claude Sonnet 4.6 (Thinking)">Claude Sonnet 4.6 (Thinking)</option>
+            <option value="Claude Opus 4.6 (Thinking)">Claude Opus 4.6 (Thinking)</option>
+            <option value="GPT-OSS 120B (Medium)">GPT-OSS 120B (Medium)</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- Left Sidebar: Runs History -->
+    <aside class="sidebar" aria-label="Session History">
+      <h2 class="sidebar-title">Runs History</h2>
+      <ul id="history-list" class="history-list">
+        <!-- Rendered dynamically by JS -->
+      </ul>
+    </aside>
+
+    <!-- Center: Main Run Trace Visualizer -->
+    <main class="main-content">
+      <div class="run-container">
+        
+        <!-- Run Main Prompt -->
+        <section class="run-header-detail" aria-labelledby="prompt-heading">
+          <h2 id="prompt-heading" style="display:none;">Active Prompt</h2>
+          <div class="run-instruction-prompt">
+            <span class="prompt-icon">&gt;</span>
+            <div id="prompt-text" class="prompt-text">Loading prompt...</div>
+          </div>
+          
+          <!-- Run Metadata Info Row -->
+          <div class="run-meta-row">
+            <div class="meta-pill">
+              <span>Model:</span>
+              <span id="model-pill" class="value">Loading...</span>
+            </div>
+            <div class="meta-pill">
+              <span>Time:</span>
+              <span id="timestamp-pill" class="value">Loading...</span>
+            </div>
+            <div class="meta-pill">
+              <span>Duration:</span>
+              <span id="duration-pill" class="value">Loading...</span>
+            </div>
+            <div class="meta-pill">
+              <span>Status:</span>
+              <span id="status-pill" class="badge badge-success">Loading...</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Execution Step Trace List -->
+        <section class="trace-timeline" aria-label="Execution Trace Steps">
+          <h2 style="display:none;">Steps Timeline</h2>
+          <div id="trace-timeline">
+            <!-- Steps are rendered dynamically by JS -->
+          </div>
+        </section>
+
+      </div>
+
+      <!-- CLI Input Prompt at Bottom -->
+      <footer class="cli-input-wrapper">
+        <form id="cli-form" class="cli-form" action="#" method="POST">
+          <label for="cli-input" class="cli-prompt-symbol">&gt;</label>
+          <input type="text" id="cli-input" class="cli-input" autocomplete="off" placeholder="Ask agy to write code, search the web, or run commands...">
+          <button type="submit" id="cli-submit-btn" class="cli-submit-btn">
+            <span>Execute</span>
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+            </svg>
+          </button>
+        </form>
+      </footer>
+    </main>
+
+    <!-- Right Sidebar: Settings and Workspace files -->
+    <aside class="right-panel" aria-label="Settings and Workspace Files">
+      
+      <!-- Settings toggles -->
+      <section class="panel-section">
+        <h2 class="panel-title">Session Settings</h2>
+        <div class="settings-list">
+          
+          <div class="setting-toggle-row">
+            <div class="setting-info">
+              <span class="setting-name">--dangerously-skip-permissions</span>
+              <span class="setting-desc">Auto-approve all permissions</span>
+            </div>
+            <label class="switch" for="toggle-skip">
+              <input type="checkbox" id="toggle-skip">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-toggle-row">
+            <div class="setting-info">
+              <span class="setting-name">--continue</span>
+              <span class="setting-desc">Continue most recent session</span>
+            </div>
+            <label class="switch" for="toggle-continue">
+              <input type="checkbox" id="toggle-continue">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-toggle-row">
+            <div class="setting-info">
+              <span class="setting-name">--sandbox</span>
+              <span class="setting-desc">Restrict terminal boundary</span>
+            </div>
+            <label class="switch" for="toggle-sandbox" aria-label="Toggle Sandbox Mode">
+              <input type="checkbox" id="toggle-sandbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-toggle-row">
+            <div class="setting-info">
+              <span class="setting-name">--print</span>
+              <span class="setting-desc">Run non-interactively</span>
+            </div>
+            <label class="switch" for="toggle-print">
+              <input type="checkbox" id="toggle-print">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Workspace file browser -->
+      <section class="panel-section">
+        <h2 class="panel-title">Workspace Files</h2>
+        <div id="file-list" class="file-list">
+          <!-- Rendered dynamically by JS -->
+        </div>
+      </section>
+
+    </aside>
+
+  </div>
+
+  <!-- File Contents Viewer Modal -->
+  <div id="file-viewer-overlay" class="file-viewer-overlay">
+    <div class="file-viewer-window" role="dialog" aria-labelledby="file-viewer-title" aria-modal="true">
+      <div class="file-viewer-header">
+        <div id="file-viewer-title" class="file-viewer-title">
+          <!-- Populated by JS -->
+        </div>
+        <button id="file-viewer-close" class="file-viewer-close" aria-label="Close Preview">&times;</button>
+      </div>
+      <div id="file-viewer-content" class="file-viewer-content">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BigQuery Release Radar - Google Cloud Feed Tracker</title>
+  <meta name="description" content="A real-time tracking dashboard for Google Cloud BigQuery Release Notes, with search, filtering, and social sharing integration.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-wrapper">
+    
+    <!-- Top Glass Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <div class="logo-icon">BQ</div>
+        <div>
+          <h1 id="app-title" class="logo-title">BigQuery Release Radar</h1>
+          <p class="logo-subtitle">Real-time Google Cloud Release Tracker</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button id="btn-refresh" class="btn-refresh" aria-label="Refresh Release Notes">
+          <svg class="icon-refresh" id="icon-refresh-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
+          </svg>
+          <span>Refresh Feed</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <div class="main-layout">
+      
+      <!-- Center Feed Area -->
+      <main class="feed-area">
+        
+        <!-- Filters and Search Controls -->
+        <section class="controls-panel" aria-label="Filters and Search">
+          <div class="search-box-wrapper">
+            <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="search-input" class="search-input" placeholder="Search update keyword, feature or issues (e.g. Gemini, UDF, quota)...">
+          </div>
+          
+          <div class="filter-pills" id="filter-pills-container">
+            <button class="pill active" data-type="all">All Updates</button>
+            <button class="pill" data-type="Feature">Features</button>
+            <button class="pill" data-type="Issue">Issues</button>
+            <button class="pill" data-type="Change">Changes</button>
+            <button class="pill" data-type="Announcement">Announcements</button>
+            <button class="pill" data-type="Breaking">Breaking</button>
+          </div>
+        </section>
+
+        <!-- Feed Timeline Section -->
+        <section id="timeline-section" class="timeline-section" aria-label="Release Timeline">
+          <div id="timeline-spinner" class="timeline-loading">
+            <div class="spinner"></div>
+            <p>Fetching latest release feed from Google Cloud...</p>
+          </div>
+          
+          <div id="timeline-empty" class="timeline-empty" style="display: none;">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3>No Updates Found</h3>
+            <p>Try resetting filters or adjusting search terms.</p>
+          </div>
+
+          <div id="timeline-container" class="timeline-container">
+            <!-- Dynamically populated entries -->
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Right Composer Panel -->
+      <aside class="composer-sidebar" aria-label="Tweet Composer Panel">
+        <div class="panel-card">
+          <h2 class="panel-title">Tweet Composer</h2>
+          <p class="panel-desc">Select any update from the timeline feed to auto-generate a tweet draft.</p>
+          
+          <div id="composer-empty-state" class="composer-empty-state">
+            <svg width="36" height="36" fill="currentColor" viewBox="0 0 24 24" class="twitter-icon-muted">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            <p>Click the <strong>Tweet Update</strong> button on any card to begin writing a draft.</p>
+          </div>
+
+          <div id="composer-form" class="composer-form" style="display: none;">
+            <div class="composer-meta">
+              <span class="meta-label">Selected Date:</span>
+              <span id="composer-date" class="meta-val">June 15, 2026</span>
+            </div>
+            
+            <div class="composer-meta">
+              <span class="meta-label">Type:</span>
+              <span id="composer-type" class="badge-type">Feature</span>
+            </div>
+
+            <div class="textarea-wrapper">
+              <label for="tweet-textarea" style="display:none;">Tweet Draft</label>
+              <textarea id="tweet-textarea" class="tweet-textarea" rows="6" maxlength="280"></textarea>
+              <div class="char-counter">
+                <span id="char-count">0</span> / 280
+              </div>
+            </div>
+
+            <button id="btn-share-tweet" class="btn-share-tweet">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 8px;">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+              <span>Share on X</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Live Statistics Panel -->
+        <div class="panel-card metrics-card">
+          <h2 class="panel-title">Feed Analytics</h2>
+          <div class="metrics-grid">
+            <div class="metric-item">
+              <span class="metric-val" id="stat-total">0</span>
+              <span class="metric-lbl">Total Updates</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-val" id="stat-features">0</span>
+              <span class="metric-lbl">Features</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-val" id="stat-issues">0</span>
+              <span class="metric-lbl">Issues</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-val" id="stat-changes">0</span>
+              <span class="metric-lbl">Changes</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
