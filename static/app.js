@@ -159,6 +159,20 @@ function renderTimeline() {
       const actions = document.createElement("div");
       actions.className = "card-actions";
       
+      // Clipboard Copy Button
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "btn-card-copy";
+      copyBtn.innerHTML = `
+        <svg class="icon-copy" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+        </svg>
+        <span>Copy</span>
+      `;
+      copyBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        copyUpdateToClipboard(update.text, copyBtn);
+      });
+      
       const tweetBtn = document.createElement("button");
       tweetBtn.className = `btn-card-tweet ${selectedUpdateId === updateId ? 'active-draft' : ''}`;
       tweetBtn.innerHTML = `
@@ -173,6 +187,7 @@ function renderTimeline() {
         selectUpdateForDraft(updateId, entry.date, update.type, update.text, entry.link);
       });
       
+      actions.appendChild(copyBtn);
       actions.appendChild(tweetBtn);
       header.appendChild(actions);
       card.appendChild(header);
@@ -287,6 +302,20 @@ function setupEventListeners() {
     const twitterIntentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
     window.open(twitterIntentUrl, "_blank");
   });
+  
+  // Theme Toggle Event
+  const themeToggle = document.getElementById("theme-toggle");
+  themeToggle.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      document.body.classList.add("light-mode");
+    } else {
+      document.body.classList.remove("light-mode");
+    }
+  });
+  
+  // Export CSV Event
+  const btnExportCSV = document.getElementById("btn-export-csv");
+  btnExportCSV.addEventListener("click", exportToCSV);
 }
 
 // Show error state inside container
@@ -300,4 +329,57 @@ function showError(msg) {
   
   emptyTitle.textContent = "Error Loading Feed";
   emptyDesc.textContent = msg || "Make sure the Flask server is running and you have an internet connection.";
+}
+
+// Copy text to system clipboard
+function copyUpdateToClipboard(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const span = btn.querySelector("span");
+    const originalText = span.textContent;
+    
+    btn.classList.add("copied");
+    span.textContent = "Copied!";
+    
+    setTimeout(() => {
+      btn.classList.remove("copied");
+      span.textContent = originalText;
+    }, 2000);
+  }).catch(err => {
+    console.error("Failed to copy release update: ", err);
+  });
+}
+
+// Export currently filtered feed to CSV
+function exportToCSV() {
+  let csv = "Date,Type,Content,Link\n";
+  
+  releaseNotes.forEach(entry => {
+    entry.updates.forEach(update => {
+      // Apply same search/filter rules
+      const matchesType = activeTypeFilter === "all" || update.type.toLowerCase() === activeTypeFilter.toLowerCase();
+      const matchesSearch = searchQuery === "" || 
+        update.text.toLowerCase().includes(searchQuery) || 
+        entry.date.toLowerCase().includes(searchQuery) ||
+        update.type.toLowerCase().includes(searchQuery);
+        
+      if (matchesType && matchesSearch) {
+        const escDate = entry.date.replace(/"/g, '""');
+        const escType = update.type.replace(/"/g, '""');
+        const escText = update.text.replace(/"/g, '""');
+        const escLink = entry.link.replace(/"/g, '""');
+        
+        csv += `"${escDate}","${escType}","${escText}","${escLink}"\n`;
+      }
+    });
+  });
+  
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `bigquery_release_notes_${activeTypeFilter}.csv`);
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
